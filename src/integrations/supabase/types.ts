@@ -176,6 +176,7 @@ export type Database = {
           image_url: string | null
           name: string
           subcategory: string | null
+          supplier_id: string | null
         }
         Insert: {
           active?: boolean | null
@@ -187,6 +188,7 @@ export type Database = {
           image_url?: string | null
           name: string
           subcategory?: string | null
+          supplier_id?: string | null
         }
         Update: {
           active?: boolean | null
@@ -198,8 +200,17 @@ export type Database = {
           image_url?: string | null
           name?: string
           subcategory?: string | null
+          supplier_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       route_orders: {
         Row: {
