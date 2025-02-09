@@ -397,7 +397,7 @@ export type Database = {
       }
     }
     Enums: {
-      staff_role: "admin" | "manager" | "delivery" | "support"
+      staff_role: "admin" | "manager" | "delivery" | "support" | "supplier"
     }
     CompositeTypes: {
       [_ in never]: never
