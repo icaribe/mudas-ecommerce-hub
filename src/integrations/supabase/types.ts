@@ -9,6 +9,155 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      product_variations: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: number
+          name: string
+          product_id: number | null
+          stock: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          name: string
+          product_id?: number | null
+          stock?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          name?: string
+          product_id?: number | null
+          stock?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          active: boolean | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          featured: boolean | null
+          id: number
+          image_url: string | null
+          name: string
+          subcategory: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          featured?: boolean | null
+          id?: number
+          image_url?: string | null
+          name: string
+          subcategory?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          featured?: boolean | null
+          id?: number
+          image_url?: string | null
+          name?: string
+          subcategory?: string | null
+        }
+        Relationships: []
+      }
+      supplier_products: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: number
+          product_variation_id: number | null
+          purchase_price: number
+          supplier_id: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: number
+          product_variation_id?: number | null
+          purchase_price: number
+          supplier_id?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: number
+          product_variation_id?: number | null
+          purchase_price?: number
+          supplier_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_products_product_variation_id_fkey"
+            columns: ["product_variation_id"]
+            isOneToOne: false
+            referencedRelation: "product_variations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          contact: string | null
+          created_at: string | null
+          email: string | null
+          id: number
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          contact?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: number
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          contact?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: number
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
       "TABELA-OFICIAL-EDITAVEL": {
         Row: {
           created_at: string
