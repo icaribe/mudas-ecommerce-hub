@@ -2,6 +2,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Leaf, Truck, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Index() {
   return (
@@ -22,10 +23,12 @@ export default function Index() {
             <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto fadeIn">
               Entregamos vida e beleza diretamente na sua porta. Plantas selecionadas com cuidado para seu jardim.
             </p>
-            <Button className="fadeIn" size="lg">
-              Explorar Catálogo
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <Link to="/catalog">
+              <Button className="fadeIn" size="lg">
+                Explorar Catálogo
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </section>
 
