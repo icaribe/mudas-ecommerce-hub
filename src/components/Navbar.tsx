@@ -17,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatPrice } from "@/lib/format";
 
-interface CartItem {
+export interface CartItem {
   id: number;
   name: string;
   price: number;
@@ -25,11 +25,58 @@ interface CartItem {
   image_url: string;
 }
 
+// Criar um contexto global para o carrinho
+export const useCart = () => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  const addToCart = (product: CartItem) => {
+    setCartItems((currentItems) => {
+      const existingItem = currentItems.find((item) => item.id === product.id);
+      
+      if (existingItem) {
+        return currentItems.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      
+      return [...currentItems, { ...product, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (productId: number) => {
+    setCartItems((currentItems) =>
+      currentItems.filter((item) => item.id !== productId)
+    );
+  };
+
+  const updateQuantity = (productId: number, newQuantity: number) => {
+    if (newQuantity < 1) {
+      removeFromCart(productId);
+      return;
+    }
+
+    setCartItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === productId ? { ...item, quantity: newQuantity } : item
+      )
+    );
+  };
+
+  return {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+  };
+};
+
 export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const { cartItems, removeFromCart, updateQuantity } = useCart();
 
   const showBackButton = location.pathname !== "/";
   const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -127,13 +174,39 @@ export function Navbar() {
                         <div className="flex justify-between">
                           <div>
                             <h3 className="text-sm font-medium">{item.name}</h3>
-                            <p className="mt-1 text-sm text-gray-500">
-                              Qtd: {item.quantity}
-                            </p>
+                            <div className="mt-1 flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              >
+                                -
+                              </Button>
+                              <span className="text-sm">{item.quantity}</span>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              >
+                                +
+                              </Button>
+                            </div>
                           </div>
-                          <p className="text-sm font-medium">
-                            {formatPrice(item.price * item.quantity)}
-                          </p>
+                          <div className="flex flex-col items-end gap-2">
+                            <p className="text-sm font-medium">
+                              {formatPrice(item.price * item.quantity)}
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 text-red-500 hover:text-red-700"
+                              onClick={() => removeFromCart(item.id)}
+                            >
+                              Remover
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>

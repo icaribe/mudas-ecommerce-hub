@@ -10,11 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Navbar } from "@/components/Navbar";
+import { Navbar, useCart } from "@/components/Navbar";
 
 const Catalog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const { addToCart } = useCart();
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
@@ -42,7 +43,20 @@ const Catalog = () => {
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddToCart = (productId: number) => {
+  const handleAddToCart = (product: any) => {
+    const lowestPriceVariation = product.product_variations.reduce(
+      (min: any, current: any) => (current.price < min.price ? current : min),
+      product.product_variations[0]
+    );
+
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: lowestPriceVariation.price,
+      quantity: 1,
+      image_url: product.image_url || "/placeholder.svg",
+    });
+
     toast({
       title: "Produto adicionado ao carrinho",
       description: "Continue comprando ou finalize seu pedido",
@@ -75,7 +89,7 @@ const Catalog = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts?.map((product) => {
               const lowestPrice = Math.min(
-                ...product.product_variations.map((v) => v.price)
+                ...product.product_variations.map((v: any) => v.price)
               );
               
               return (
@@ -103,7 +117,7 @@ const Catalog = () => {
                       )}
                       <Button
                         size="sm"
-                        onClick={() => handleAddToCart(product.id)}
+                        onClick={() => handleAddToCart(product)}
                       >
                         <ShoppingCart className="h-4 w-4 mr-2" />
                         Adicionar
