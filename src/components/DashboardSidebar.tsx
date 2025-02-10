@@ -7,8 +7,9 @@ import {
   ShoppingCart,
   Truck,
   Users,
+  LogOut,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -17,15 +18,37 @@ import {
   SidebarMenuButton,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export function DashboardSidebar() {
+  const { staffProfile } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/auth");
+      toast.success("Sessão encerrada com sucesso");
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+      toast.error("Erro ao encerrar sessão");
+    }
+  };
+
   return (
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2 px-4 py-2">
             <Package className="h-6 w-6" />
-            <span className="font-semibold">Admin</span>
+            <div className="flex flex-col">
+              <span className="font-semibold">Admin</span>
+              <span className="text-xs text-muted-foreground">
+                {staffProfile?.full_name}
+              </span>
+            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -72,6 +95,10 @@ export function DashboardSidebar() {
                 <span>Financeiro</span>
               </SidebarMenuButton>
             </NavLink>
+            <SidebarMenuButton onClick={handleLogout} className="text-destructive">
+              <LogOut className="h-4 w-4" />
+              <span>Sair</span>
+            </SidebarMenuButton>
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
