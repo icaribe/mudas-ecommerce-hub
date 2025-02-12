@@ -2,7 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Orders() {
-  const { staffProfile } = useAuth();
+  const { userProfile } = useAuth();
 
   return (
     <div className="space-y-4">

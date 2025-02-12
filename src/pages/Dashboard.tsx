@@ -5,20 +5,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 
 export default function Dashboard() {
-  const { user, staffProfile, isLoading } = useAuth();
+  const { user, userProfile, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && (!user || !staffProfile)) {
+    if (!isLoading && (!user || !userProfile)) {
       navigate("/auth");
     }
-  }, [user, staffProfile, isLoading, navigate]);
+  }, [user, userProfile, isLoading, navigate]);
 
   if (isLoading) {
     return <div>Carregando...</div>;
   }
 
-  if (!user || !staffProfile) {
+  if (!user || !userProfile) {
     return null;
   }
 

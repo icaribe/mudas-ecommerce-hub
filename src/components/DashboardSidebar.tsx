@@ -23,7 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function DashboardSidebar() {
-  const { staffProfile } = useAuth();
+  const { userProfile } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -46,7 +46,7 @@ export function DashboardSidebar() {
             <div className="flex flex-col">
               <span className="font-semibold">Admin</span>
               <span className="text-xs text-muted-foreground">
-                {staffProfile?.full_name}
+                {userProfile?.full_name}
               </span>
             </div>
           </div>
