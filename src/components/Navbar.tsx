@@ -1,5 +1,5 @@
 
-import { ShoppingCart, Menu, Search, ArrowLeft } from "lucide-react";
+import { ShoppingCart, Menu, Search, ArrowLeft, User } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -16,6 +16,7 @@ import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatPrice } from "@/lib/format";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface CartItem {
   id: number;
@@ -77,6 +78,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { cartItems, removeFromCart, updateQuantity } = useCart();
+  const { userProfile } = useAuth();
 
   const showBackButton = location.pathname !== "/";
   const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -84,6 +86,18 @@ export function Navbar() {
 
   const handleGoBack = () => {
     navigate(-1);
+  };
+
+  const getProfileLink = () => {
+    if (!userProfile) return "/auth";
+    switch (userProfile.user_type) {
+      case "customer":
+        return "/customer/dashboard";
+      case "vendor":
+        return "/vendor/dashboard";
+      default:
+        return "/auth";
+    }
   };
 
   return (
@@ -117,6 +131,9 @@ export function Navbar() {
                   <a href="/catalog" className="block px-4 py-2 hover:bg-accent rounded-md">
                     Produtos
                   </a>
+                  <a href={getProfileLink()} className="block px-4 py-2 hover:bg-accent rounded-md">
+                    Perfil
+                  </a>
                   <a href="/about" className="block px-4 py-2 hover:bg-accent rounded-md">
                     Sobre
                   </a>
@@ -137,7 +154,16 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(getProfileLink())}
+              className="relative"
+            >
+              <User className="h-6 w-6" />
+            </Button>
+
             <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
