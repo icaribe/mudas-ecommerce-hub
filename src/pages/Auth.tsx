@@ -28,6 +28,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +43,7 @@ export default function Auth() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [userType, setUserType] = useState<"customer" | "vendor" | null>(null);
+  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -43,27 +51,31 @@ export default function Auth() {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error: loginError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (loginError) throw loginError;
 
-      // Redirecionar com base no tipo de usuário
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Usuário não encontrado");
+
+      // Verificar se existe perfil
       const { data: profile } = await supabase
         .from("user_profiles")
         .select("user_type")
-        .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
+        .eq("user_id", userData.user.id)
         .maybeSingle();
 
-      toast.success("Login realizado com sucesso!");
-
       if (!profile) {
-        // Se não houver perfil, redirecionar para uma página padrão ou mostrar erro
-        toast.error("Perfil não encontrado. Por favor, entre em contato com o suporte.");
+        // Se não houver perfil, mostrar diálogo para completar
+        setShowCompleteProfile(true);
+        setIsLoading(false);
         return;
       }
+
+      toast.success("Login realizado com sucesso!");
 
       if (profile.user_type === "vendor") {
         navigate("/vendor/dashboard");
@@ -75,6 +87,74 @@ export default function Auth() {
       toast.error(error.message === "Invalid login credentials"
         ? "Credenciais inválidas. Verifique seu email e senha."
         : "Erro ao fazer login. Por favor, tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const completeProfile = async () => {
+    if (!userType) {
+      toast.error("Por favor, selecione o tipo de usuário");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Usuário não encontrado");
+
+      // Criar perfil do usuário
+      const { error: profileError } = await supabase
+        .from("user_profiles")
+        .insert([
+          {
+            user_id: userData.user.id,
+            user_type: userType,
+            full_name: fullName,
+            phone,
+            email,
+          },
+        ]);
+
+      if (profileError) throw profileError;
+
+      // Obter o ID do perfil criado
+      const { data: profileData, error: profileFetchError } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("user_id", userData.user.id)
+        .single();
+
+      if (profileFetchError) throw profileFetchError;
+
+      // Criar perfil específico
+      if (userType === "customer") {
+        const { error: customerError } = await supabase
+          .from("customer_profiles")
+          .insert([{ user_profile_id: profileData.id }]);
+
+        if (customerError) throw customerError;
+      } else {
+        const { error: vendorError } = await supabase
+          .from("vendor_profiles")
+          .insert([{ user_profile_id: profileData.id }]);
+
+        if (vendorError) throw vendorError;
+      }
+
+      toast.success("Perfil completado com sucesso!");
+      setShowCompleteProfile(false);
+
+      // Redirecionar baseado no tipo
+      if (userType === "vendor") {
+        navigate("/vendor/dashboard");
+      } else {
+        navigate("/customer/dashboard");
+      }
+    } catch (error: any) {
+      console.error("Erro ao completar perfil:", error);
+      toast.error("Erro ao completar perfil. Por favor, tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -165,6 +245,59 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
+      <Dialog open={showCompleteProfile} onOpenChange={setShowCompleteProfile}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Complete seu perfil</DialogTitle>
+            <DialogDescription>
+              Por favor, complete suas informações para continuar
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Tipo de Usuário</Label>
+              <Select
+                value={userType || undefined}
+                onValueChange={(value: "customer" | "vendor") =>
+                  setUserType(value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de usuário" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="customer">Cliente</SelectItem>
+                  <SelectItem value="vendor">Viveirista</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Nome Completo</Label>
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Telefone</Label>
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+              />
+            </div>
+            <Button
+              className="w-full"
+              onClick={completeProfile}
+              disabled={isLoading}
+            >
+              {isLoading ? "Salvando..." : "Completar Perfil"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="w-full max-w-md space-y-8 p-8">
         <div className="flex flex-col items-center justify-center text-center">
           <Package className="h-12 w-12 text-primary" />
