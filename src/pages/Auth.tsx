@@ -50,6 +50,8 @@ export default function Auth() {
 
       if (error) throw error;
 
+      toast.success("Login realizado com sucesso!");
+      
       // Redirecionar com base no tipo de usuário
       const { data: profile } = await supabase
         .from("user_profiles")
@@ -62,9 +64,11 @@ export default function Auth() {
       } else {
         navigate("/customer/dashboard");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao fazer login:", error);
-      toast.error("Erro ao fazer login. Por favor, verifique suas credenciais.");
+      toast.error(error.message === "Invalid login credentials"
+        ? "Credenciais inválidas. Verifique seu email e senha."
+        : "Erro ao fazer login. Por favor, tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -84,39 +88,41 @@ export default function Auth() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
       });
 
       if (authError) throw authError;
+      if (!authData.user) throw new Error("Erro ao criar usuário");
 
       // 2. Criar perfil do usuário
-      const { data: profileData, error: profileError } = await supabase
+      const { error: profileError } = await supabase
         .from("user_profiles")
         .insert([
           {
-            user_id: authData.user!.id,
+            user_id: authData.user.id,
             user_type: userType,
             full_name: fullName,
             phone,
             email,
           },
-        ])
-        .select()
-        .single();
+        ]);
 
       if (profileError) throw profileError;
 
       // 3. Criar perfil específico baseado no tipo
+      const userProfileResponse = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("user_id", authData.user.id)
+        .single();
+
+      if (userProfileResponse.error) throw userProfileResponse.error;
+
       if (userType === "customer") {
         const { error: customerError } = await supabase
           .from("customer_profiles")
           .insert([
             {
-              user_profile_id: profileData.id,
+              user_profile_id: userProfileResponse.data.id,
             },
           ]);
 
@@ -126,7 +132,7 @@ export default function Auth() {
           .from("vendor_profiles")
           .insert([
             {
-              user_profile_id: profileData.id,
+              user_profile_id: userProfileResponse.data.id,
             },
           ]);
 
@@ -134,15 +140,18 @@ export default function Auth() {
       }
 
       toast.success("Conta criada com sucesso! Por favor, faça login.");
+      
       // Resetar formulário
       setEmail("");
       setPassword("");
       setFullName("");
       setPhone("");
       setUserType(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao criar conta:", error);
-      toast.error("Erro ao criar conta. Por favor, tente novamente.");
+      toast.error(error.message === "User already registered"
+        ? "Este email já está registrado. Por favor, faça login."
+        : "Erro ao criar conta. Por favor, tente novamente.");
     } finally {
       setIsLoading(false);
     }
