@@ -50,16 +50,22 @@ export default function Auth() {
 
       if (error) throw error;
 
-      toast.success("Login realizado com sucesso!");
-      
       // Redirecionar com base no tipo de usuário
       const { data: profile } = await supabase
         .from("user_profiles")
         .select("user_type")
         .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
-        .single();
+        .maybeSingle();
 
-      if (profile?.user_type === "vendor") {
+      toast.success("Login realizado com sucesso!");
+
+      if (!profile) {
+        // Se não houver perfil, redirecionar para uma página padrão ou mostrar erro
+        toast.error("Perfil não encontrado. Por favor, entre em contato com o suporte.");
+        return;
+      }
+
+      if (profile.user_type === "vendor") {
         navigate("/vendor/dashboard");
       } else {
         navigate("/customer/dashboard");
