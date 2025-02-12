@@ -10,6 +10,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Catalog from "./pages/Catalog";
 import NotFound from "./pages/NotFound";
+import CustomerDashboard from "./pages/customer/Dashboard";
+import VendorDashboard from "./pages/vendor/Dashboard";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/catalog" element={<Catalog />} />
+                <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+                <Route path="/vendor/dashboard" element={<VendorDashboard />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
