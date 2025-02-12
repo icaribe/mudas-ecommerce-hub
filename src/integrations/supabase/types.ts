@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      customer_profiles: {
+        Row: {
+          address: string | null
+          id: string
+          location_lat: number | null
+          location_long: number | null
+          postal_code: string | null
+          user_profile_id: string
+        }
+        Insert: {
+          address?: string | null
+          id?: string
+          location_lat?: number | null
+          location_long?: number | null
+          postal_code?: string | null
+          user_profile_id: string
+        }
+        Update: {
+          address?: string | null
+          id?: string
+          location_lat?: number | null
+          location_long?: number | null
+          postal_code?: string | null
+          user_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_profiles_user_profile_id_fkey"
+            columns: ["user_profile_id"]
+            isOneToOne: true
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_routes: {
         Row: {
           active: boolean | null
@@ -211,10 +246,18 @@ export type Database = {
           featured: boolean | null
           id: number
           image_url: string | null
+          is_approved: boolean | null
+          is_template: boolean | null
           name: string
+          planting_date: string | null
+          production_stage: string | null
+          propagation_type: string | null
           subcategory: string | null
+          sun_exposure: string | null
           supplier_id: string | null
+          template_product_id: number | null
           updated_at: string | null
+          vendor_id: string | null
         }
         Insert: {
           active?: boolean | null
@@ -225,10 +268,18 @@ export type Database = {
           featured?: boolean | null
           id?: number
           image_url?: string | null
+          is_approved?: boolean | null
+          is_template?: boolean | null
           name: string
+          planting_date?: string | null
+          production_stage?: string | null
+          propagation_type?: string | null
           subcategory?: string | null
+          sun_exposure?: string | null
           supplier_id?: string | null
+          template_product_id?: number | null
           updated_at?: string | null
+          vendor_id?: string | null
         }
         Update: {
           active?: boolean | null
@@ -239,10 +290,18 @@ export type Database = {
           featured?: boolean | null
           id?: number
           image_url?: string | null
+          is_approved?: boolean | null
+          is_template?: boolean | null
           name?: string
+          planting_date?: string | null
+          production_stage?: string | null
+          propagation_type?: string | null
           subcategory?: string | null
+          sun_exposure?: string | null
           supplier_id?: string | null
+          template_product_id?: number | null
           updated_at?: string | null
+          vendor_id?: string | null
         }
         Relationships: [
           {
@@ -257,6 +316,20 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_template_product_id_fkey"
+            columns: ["template_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -417,6 +490,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          photo_url: string | null
+          updated_at: string | null
+          user_id: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          photo_url?: string | null
+          updated_at?: string | null
+          user_id: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          photo_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Relationships: []
+      }
       usuarios: {
         Row: {
           cpf: string | null
@@ -444,6 +553,98 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_inventory: {
+        Row: {
+          cost_price: number | null
+          created_at: string | null
+          id: string
+          online_stock: number | null
+          physical_stock: number | null
+          product_id: number
+          sale_price: number | null
+          updated_at: string | null
+          vendor_id: string
+        }
+        Insert: {
+          cost_price?: number | null
+          created_at?: string | null
+          id?: string
+          online_stock?: number | null
+          physical_stock?: number | null
+          product_id: number
+          sale_price?: number | null
+          updated_at?: string | null
+          vendor_id: string
+        }
+        Update: {
+          cost_price?: number | null
+          created_at?: string | null
+          id?: string
+          online_stock?: number | null
+          physical_stock?: number | null
+          product_id?: number
+          sale_price?: number | null
+          updated_at?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_inventory_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_profiles: {
+        Row: {
+          business_document: string | null
+          id: string
+          is_approved: boolean | null
+          nursery_address: string | null
+          nursery_location_lat: number | null
+          nursery_location_long: number | null
+          nursery_name: string | null
+          user_profile_id: string
+        }
+        Insert: {
+          business_document?: string | null
+          id?: string
+          is_approved?: boolean | null
+          nursery_address?: string | null
+          nursery_location_lat?: number | null
+          nursery_location_long?: number | null
+          nursery_name?: string | null
+          user_profile_id: string
+        }
+        Update: {
+          business_document?: string | null
+          id?: string
+          is_approved?: boolean | null
+          nursery_address?: string | null
+          nursery_location_lat?: number | null
+          nursery_location_long?: number | null
+          nursery_name?: string | null
+          user_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_profiles_user_profile_id_fkey"
+            columns: ["user_profile_id"]
+            isOneToOne: true
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -458,6 +659,7 @@ export type Database = {
     }
     Enums: {
       staff_role: "admin" | "manager" | "delivery" | "support" | "supplier"
+      user_type: "customer" | "vendor"
     }
     CompositeTypes: {
       [_ in never]: never

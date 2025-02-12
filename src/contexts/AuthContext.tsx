@@ -2,33 +2,32 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 
-// Use the enum type from the database
-type StaffRole = Database["public"]["Enums"]["staff_role"];
-
-interface StaffProfile {
+interface UserProfile {
   id: string;
+  user_id: string;
+  user_type: "customer" | "vendor";
   full_name: string | null;
-  role: StaffRole;
-  active: boolean;
+  phone: string | null;
+  email: string | null;
+  photo_url: string | null;
 }
 
 interface AuthContextType {
   user: User | null;
-  staffProfile: StaffProfile | null;
+  userProfile: UserProfile | null;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  staffProfile: null,
+  userProfile: null,
   isLoading: true,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchStaffProfile(session.user.id);
+        fetchUserProfile(session.user.id);
       } else {
         setIsLoading(false);
       }
@@ -48,9 +47,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchStaffProfile(session.user.id);
+        fetchUserProfile(session.user.id);
       } else {
-        setStaffProfile(null);
+        setUserProfile(null);
         setIsLoading(false);
       }
     });
@@ -58,26 +57,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchStaffProfile = async (userId: string) => {
+  const fetchUserProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from("staff_profiles")
+        .from("user_profiles")
         .select("*")
         .eq("user_id", userId)
         .single();
 
       if (error) throw error;
-      setStaffProfile(data);
+      setUserProfile(data);
     } catch (error) {
-      console.error("Error fetching staff profile:", error);
-      setStaffProfile(null);
+      console.error("Error fetching user profile:", error);
+      setUserProfile(null);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, staffProfile, isLoading }}>
+    <AuthContext.Provider value={{ user, userProfile, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
